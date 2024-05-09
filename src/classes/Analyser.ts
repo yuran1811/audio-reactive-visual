@@ -1,13 +1,13 @@
-import * as THREE from "three";
+import { BufferGeometry, LineBasicMaterial, BufferAttribute, Line } from "three";
 
 class AudioData {
-  audio: any;
-  audioContext: any;
-  audioSource: any;
-  analyser: any;
-  frequencyData: any;
+  audio: HTMLMediaElement;
+  audioContext: AudioContext;
+  audioSource: MediaElementAudioSourceNode;
+  analyser: AnalyserNode;
+  frequencyData: Uint8Array;
 
-  constructor(audio: any, fftSize = 8192, smoothing = 0.8) {
+  constructor(audio: HTMLMediaElement, fftSize = 8192, smoothing = 0.8) {
     this.audio = audio;
     this.audioContext = new AudioContext();
 
@@ -39,22 +39,23 @@ class AudioData {
 }
 
 class ParticlesSphere {
-  geometry: any;
-  initPositions: any;
-  lineMaterial: any;
-  numParticles: any;
-  radius: any;
-  step: any;
-  turns: any;
+  geometry: BufferGeometry;
+  lineMaterial: LineBasicMaterial;
+  initPositions: Float32Array;
+  numParticles: number;
+  radius: number;
+  step: number;
+  turns: number;
 
   constructor(radius = 100, numParticles = 4000, turns = 60) {
     this.numParticles = numParticles;
     this.radius = radius;
     this.step = 2 / numParticles;
     this.turns = turns;
-    this.geometry = new THREE.BufferGeometry();
-    this.lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+    this.geometry = new BufferGeometry();
+    this.lineMaterial = new LineBasicMaterial({ color: 0xffffff });
     this.initPositions = new Float32Array(numParticles * 3);
+
     this.init();
   }
 
@@ -71,14 +72,15 @@ class ParticlesSphere {
       const phi = Math.acos(i); // azimuth
       const theta = (2 * this.turns * phi) % (2 * Math.PI); // inclination
 
-      // The inversion (in cos, sin theta) is caused since the Cartesian coordinate system in Three.js
+      // The inversion (in cos, sin theta) is caused since the Cartesian coordinate system in threejs
       // has different rotation which is visualized in math courses
       positions[index++] = this.radius * Math.sin(phi) * Math.cos(theta);
       positions[index++] = this.radius * Math.sin(phi) * Math.sin(theta);
       positions[index++] = this.radius * Math.cos(phi);
     }
-    this.initPositions = [...positions];
-    this.geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+    this.initPositions = new Float32Array([...positions]);
+    this.geometry.setAttribute("position", new BufferAttribute(positions, 3));
   }
 
   set positionNeedsUpdate(bool: boolean) {
@@ -88,7 +90,7 @@ class ParticlesSphere {
   }
 
   get lineMesh() {
-    return new THREE.Line(this.geometry, this.lineMaterial);
+    return new Line(this.geometry, this.lineMaterial);
   }
 }
 

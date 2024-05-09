@@ -25,4 +25,4 @@ yarn dev
 
 ## References
 
-- [XMas Tree by thuongton999](https://codepen.io/thuongton999/pen/VwRYaRw) with some modifications and improvements by [me](https://github.com/yuran1811).
+- [XMas Tree by thuongton999](https://codepen.io/thuongton999/pen/VwRYaRw) inspired from [ThreeJS Audio Reactive Visual](https://github.com/kekkorider/threejs-audio-reactive-visual/tree/main) with some modifications and improvements by [me](https://github.com/yuran1811).

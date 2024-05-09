@@ -4,18 +4,14 @@ import { gsap } from "gsap";
 import { loadShader } from "../utils";
 
 class World {
-  private scene: THREE.Scene;
-  private clock: THREE.Clock;
-  private angle: { x: number; z: number };
+  private data: number;
   private width: number;
   private height: number;
+  private pixelRatio: number;
   private aspectRatio: number;
   private fieldOfView: number;
-  private camera: THREE.PerspectiveCamera;
-  private renderer: THREE.WebGLRenderer;
-  private pixelRatio: number;
+  private angle: { x: number; z: number };
   private parameters: { count: number; max: number; a: number; c: number };
-  private data: number;
   private time: {
     current: number;
     t0: number;
@@ -29,17 +25,21 @@ class World {
   private isRunning: boolean = false;
   private audioBtn: HTMLButtonElement | null = null;
 
-  private analyser: THREE.AudioAnalyser | null = null;
   private sound: THREE.Audio;
+  private clock: THREE.Clock;
+  private scene: THREE.Scene;
+  private camera: THREE.PerspectiveCamera;
+  private renderer: THREE.WebGLRenderer;
+  private analyser: THREE.AudioAnalyser | null = null;
   private composer: any; // not use without postProcessing
 
-  private spiralMaterial?: THREE.ShaderMaterial;
-  private instancedGeometry?: THREE.InstancedBufferGeometry;
-  private extMaterial?: THREE.ShaderMaterial;
   private octas: THREE.Group;
   private spiral?: THREE.Mesh;
   private externalSphere?: THREE.Mesh;
+  private extMaterial?: THREE.ShaderMaterial;
+  private spiralMaterial?: THREE.ShaderMaterial;
   private octaGeometry?: THREE.OctahedronGeometry;
+  private instancedGeometry?: THREE.InstancedBufferGeometry;
 
   constructor({
     canvas,
@@ -58,6 +58,8 @@ class World {
     nearPlane?: number;
     farPlane?: number;
   }) {
+    this.data = 0;
+    this.angle = { x: 0, z: 0 };
     this.parameters = {
       count: 1500,
       max: 12.5 * Math.PI,
@@ -65,18 +67,16 @@ class World {
       c: 4.5,
     };
 
-    this.octas = new THREE.Group();
-    this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color("#00101a");
-
     this.clock = new THREE.Clock();
     this.time = { current: 0, t0: 0, t1: 0, t: 0, frequency: 0.0005, delta: 0, elapsed: 0 };
-    this.angle = { x: 0, z: 0 };
-    this.data = 0;
+
+    this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color("#00101a");
 
     this.width = width || window.innerWidth;
     this.height = height || window.innerHeight;
     this.aspectRatio = this.width / this.height;
+    this.pixelRatio = Math.min(window.devicePixelRatio, 2);
     this.fieldOfView = fieldOfView;
     this.camera = new THREE.PerspectiveCamera(
       this.fieldOfView,
@@ -94,12 +94,12 @@ class World {
       stencil: false,
       depth: false,
     });
-    this.pixelRatio = Math.min(window.devicePixelRatio, 2);
     this.renderer.setPixelRatio(this.pixelRatio);
     this.renderer.setSize(this.width, this.height);
 
-    this.addToScene();
-    this.addButton();
+    this.octas = new THREE.Group();
+    this.generateObjects();
+    this.generateAudioButton();
 
     const listener = new THREE.AudioListener();
     this.camera.add(listener);
@@ -109,7 +109,7 @@ class World {
   start() {
     this.render();
     // this.postProcessing();
-    this.listenToResize();
+    this.windowResizeHandler();
 
     this.loop();
   }
@@ -191,7 +191,7 @@ class World {
     requestAnimationFrame(this.loop.bind(this));
   }
 
-  listenToResize() {
+  windowResizeHandler() {
     window.addEventListener("resize", () => {
       // Update sizes
       this.width = window.innerWidth;
@@ -289,6 +289,7 @@ class World {
     this.externalSphere = new THREE.Mesh(geometry, this.extMaterial);
     this.scene.add(this.externalSphere);
   }
+
   addOctahedron({ color = "white", scale = [1, 1, 1], position = [0, 0, 0] }) {
     const octa = new THREE.Mesh(
       this.octaGeometry,
@@ -297,6 +298,7 @@ class World {
         color,
       }),
     );
+
     // @ts-ignore
     octa.scale.set(...scale);
     // @ts-ignore
@@ -305,6 +307,7 @@ class World {
   }
   addOctahedrons() {
     this.octaGeometry = new THREE.OctahedronGeometry(0.2, 0);
+
     this.addOctahedron({ color: "red", scale: [1, 1.4, 1] });
     this.addOctahedron({
       color: "tomato",
@@ -329,21 +332,28 @@ class World {
     });
     this.scene.add(this.octas);
   }
-  addToScene() {
+
+  generateObjects() {
+    this.addOctahedrons();
     this.addSpiral();
     this.addExternalSphere();
-    this.addOctahedrons();
   }
-  addButton() {
+  generateAudioButton() {
     this.audioBtn = document.querySelector("button#play-music");
-    this.audioBtn?.addEventListener("click", () => {
+    if (!this.audioBtn) return;
+
+    this.audioBtn.addEventListener("click", (e) => {
       if (!this.audioBtn) return;
+
       this.audioBtn.disabled = true;
+
       if (this.analyser) {
         this.sound.play();
+
+        this.isRunning = true;
         this.time.t0 = this.time.elapsed;
         this.data = 0;
-        this.isRunning = true;
+
         gsap.to(this.audioBtn, {
           opacity: 0,
           duration: 1,
@@ -351,9 +361,7 @@ class World {
         });
       } else {
         this.audioBtn.textContent = "Loading...";
-        this.loadMusic().then(() => {
-          console.log("music loaded");
-        });
+        this.loadMusic().then(() => console.log("music loaded"));
       }
     });
   }
@@ -366,8 +374,9 @@ class World {
         (buffer) => {
           this.sound.setBuffer(buffer);
           this.sound.setLoop(false);
-          this.sound.setVolume(0.5);
+          this.sound.setVolume(0.45);
           this.sound.play();
+
           this.analyser = new THREE.AudioAnalyser(this.sound, 32);
           // get the average frequency of the sound
           const data = this.analyser.getAverageFrequency();

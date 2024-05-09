@@ -111,7 +111,7 @@ export const AudioSphere: FC = () => {
 
   const setActiveAudio = (isActive: boolean) => {
     activeAudio = isActive;
-    if (!audioData) audioData = new AudioData(audioEl.current);
+    if (!audioData) audioData = new AudioData(audioEl.current!);
     isActive ? audioData.play() : audioData.pause();
   };
 

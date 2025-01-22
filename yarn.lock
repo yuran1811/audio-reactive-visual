@@ -985,9 +985,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"audio-sphere@workspace:.":
+"audio-reactive-visual@workspace:.":
   version: 0.0.0-use.local
-  resolution: "audio-sphere@workspace:."
+  resolution: "audio-reactive-visual@workspace:."
   dependencies:
     "@types/react": "npm:^18.3.1"
     "@types/react-dom": "npm:^18.3.0"

@@ -17,8 +17,8 @@
 ## Screenshots
 
 <div style="display:flex;gap:12px;justify-content:center">
-    <img src="./public/screenshots/xmas-tree.png" alt="address_info.png" style="width:45%;max-width:380px">
-    <img src="./public/screenshots/sphere.png" alt="shipping_provider.png" style="width:45%;max-width:380px">
+    <img src="./public/screenshots/xmas-tree.png" style="width:45%;max-width:380px">
+    <img src="./public/screenshots/sphere.png" style="width:45%;max-width:380px">
 </div>
 
 ## Quick Start

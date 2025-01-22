@@ -1,12 +1,12 @@
 <h1 align="center">Audio Reactive Visual</h1>
-
-<p align="center">
+<p align="center">  
   <img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/palette/macchiato.png" width="400" />
 </p>
+<div align="center"><a href="https://yuran1811.github.io/audio-reactive-visual/" target="_blank">Live Demo</a></div>
 
 ## Introduction
 
-- This project is a simple audio reactive visual using `threejs` and `gsap` with `web audio api`.
+- This project is a simple audio reactive visual using `threejs`, `gsap` and `web audio api`.
 
 ## Tech Stack
 
